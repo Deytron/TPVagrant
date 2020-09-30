@@ -1,0 +1,33 @@
+file_to_disk = '/home/lemalgache/vagrant/VagrantDisk.vdi'
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "CentOS_custom"
+  
+  ## Les 3 lignes suivantes permettent d'éviter certains bugs et/ou d'accélérer le déploiement. Gardez-les tout le temps sauf contre-indications.
+  # Ajoutez cette ligne afin d'accélérer le démarrage de la VM (si une erreur 'vbguest' est levée, voir la note un peu plus bas)
+  config.vbguest.auto_update = false
+
+  # Désactive les updates auto qui peuvent ralentir le lancement de la machine
+  config.vm.box_check_update = false
+ 
+  # La ligne suivante permet de désactiver le montage d'un dossier partagé (ne marche pas tout le temps directement suivant vos OS, versions d'OS, etc.)
+  config.vm.synced_folder ".", "/vagrant", disabled: true
+
+  # Config réseau host only
+  config.vm.network "private_network", ip: "192.168.2.11",
+    virtualbox__intnet: true
+
+  # Config du hostname
+  config.vm.hostname = "MachineDeOuf"
+
+  # Setup VirtualBox Provider
+  config.vm.provider "virtualbox" do |vb|
+    vb.customize ["modifyvm", :id, "--memory", "1024"]
+    vb.customize ['createhd', '--filename', file_to_disk, '--size', 5 * 1024]
+    vb.customize ['storageattach', :id, '--storagectl', 'IDE', '--port', 1, '--device', 0, '--type', 'hdd', '--medium', file_to_disk]
+
+  # Lancement d'un script au démarrage
+  # config.vm.provision "shell",
+  #  path: "/home/lemalgache/vagrant/script.sh"
+end
+end
